@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>หน้าแรก | Nature Portfolio</title>
+
+    <!-- ✅ Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- ✅ AOS (Animation on Scroll) -->
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
+    <!-- ✅ Animate CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+    <!-- ✅ Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+    <!-- ✅ จุดแทรกฟอนต์ของ Ice -->
+    <!-- <link href="YOUR-FONT-LINK-HERE" rel="stylesheet"> -->
+
+    <style>
+        body {
+            background: linear-gradient(#e0f2e9, #a8ddb5);
+            font-family: 'YourFont', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* ---------------- Navbar ---------------- */
+        .navbar {
+            background-color: #2e7d32;
+        }
+        .navbar a {
+            color: white !important;
+            font-weight: 500;
+        }
+        .navbar a:hover {
+            color: #c8e6c9 !important;
+        }
+
+        /* ---------------- Banner ---------------- */
+.banner {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1920 / 420; /* ✅ อัตราส่วนของรูปภาพ */
+    background: url('pic/banner.gif') center center / cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-shadow: 2px 2px 8px #000;
+    font-size: 2rem;
+}
+
+/* สำหรับหน้าจอเล็ก ให้ลดขนาดข้อความในแบนเนอร์ */
+@media (max-width: 768px) {
+    .banner {
+        font-size: 1.4rem;
+    }
+}
+
+
+        /* ---------------- Loader Transition ---------------- */
+        #transitionLoader {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: #e0f2e9;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.6s ease;
+        }
+
+        #transitionLoader.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* ---------------- Content Area ---------------- */
+        .content {
+            padding: 60px 0;
+        }
+
+        .content h2 {
+            font-weight: 700;
+        }
+
+        .footer {
+            background-color: #2e7d32;
+            color: white;
+            padding: 15px 0;
+        }
+
+        /* ---------------- Scroll Smooth ---------------- */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body>
+    <!-- Transition Loader -->
+    <div id="transitionLoader">
+        <div class="spinner-border text-success" role="status" style="width:4rem; height:4rem;"></div>
+    </div>
+
+    <!-- ---------------- Navbar ---------------- -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow">
+      <div class="container">
+        <a class="navbar-brand fw-bold" href="index.html">
+          <i class="fa-solid fa-leaf"></i> Nature Portfolio
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navMenu">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link active" href="index.html"><i class="fa-solid fa-house"></i> หน้าแรก</a></li>
+            <li class="nav-item"><a class="nav-link" href="infograp.html"><i class="fa-solid fa-chart-pie"></i> Infographic</a></li>
+            <li class="nav-item"><a class="nav-link" href="vtr.html"><i class="fa-solid fa-video"></i> VTR</a></li>
+            <li class="nav-item"><a class="nav-link" href="game.html"><i class="fa-solid fa-gamepad"></i> Game</a></li>
+            <li class="nav-item"><a class="nav-link" href="Ar.html"><i class="fa-solid fa-vr-cardboard"></i> AR/VR</a></li>
+            <li class="nav-item"><a class="nav-link" href="ebook.html"><i class="fa-solid fa-book-open"></i> E-book</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ---------------- Banner ---------------- -->
+    <div class="banner animate__animated animate__fadeIn">
+        
+    </div>
+
+    <!-- ---------------- Content Section ---------------- -->
+    <section class="content container" data-aos="fade-up">
+        <h2 class="text-center text-success mb-4">
+			<img width="30%" src="PIC/Logo.png">
+			<br>กระทรวงทรัพยากรธรรมชาติและสิ่งแวดล้อมคืออะไร?</h2>
+        <p class="text-right text-muted" ><font size="5">💬 กระทรวงทรัพยากรธรรมชาติและสิ่งแวดล้อมก่อตั้งขึ้นเมื่อวันที่ 3 ตุลาคม พ.ศ. 2545 ตามพระราชบัญญัติปรับปรุงกระทรวง ทบวง กรม พ.ศ. 2545[2] หมวด 9 ตามมาตรา 22 กำหนดให้กระทรวงทรัพยากรธรรมชาติและสิ่งแวดล้อม มีอำนาจหน้าที่เกี่ยวกับการสงวน อนุรักษ์ และฟื้นฟูทรัพยากรธรรมชาติและสิ่งแวดล้อม การจัดการการใช้ประโยชน์อย่างยั่งยืน และราชการอื่นตามที่กฎหมายกำหนดให้เป็นอำนาจหน้าที่ของกระทรวงทรัพยากรธรรมชาติและสิ่งแวดล้อม มีส่วนราชการตามมาตรา 23 ดังต่อไปนี้ <br>
+
+สำนักงานรัฐมนตรี<br>
+
+สำนักงานปลัดกระทรวง<br>
+
+กรมควบคุมมลพิษ<br>
+
+กรมทรัพยากรทางทะเลและชายฝั่ง<br>
+
+กรมทรัพยากรธรณี<br>
+กรมทรัพยากรน้ำ<br>
+
+กรมทรัพยากรน้ำบาดาล<br>
+
+กรมการเปลี่ยนแปลงสภาพภูมิอากาศและสิ่งแวดล้อม<br>
+
+กรมอุทยานแห่งชาติ สัตว์ป่า และพันธุ์พืช<br>
+
+สำนักงานนโยบายและแผนทรัพยากรธรรมชาติและสิ่งแวดล้อม<br>
+
+และตามพระราชกฤษฎีกาโอนกิจการบริหารและอำนาจหน้าที่ของส่วนราชการ ให้เป็นไปตามพระราชบัญญัติปรับปรุงกระทรวง ทบวง กรม พ.ศ. 2545[3] ส่วนที่ 8 มาตรา 57 ถึง มาตรา 70
+
+
+ต่อมาเมื่อมี พระราชบัญญัติสงวนและคุ้มครองสัตว์ป่า พ.ศ. 2562 ได้แต่งตั้ง นาย จตุพร บุรุษพัฒน์ เป็น รองประธานกรรมการใน คณะกรรมการสงวนและคุ้มครองสัตว์ป่า มีผลในวันที่ 25 พฤศจิกายน พ.ศ. 2562[4]</font></p>
+
+        <div class="row text-center mt-5">
+            <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                <i class="fa-solid fa-chart-pie fa-3x text-success mb-3"></i>
+                <h5>Infographic</h5>
+                <p>พื้นที่สำหรับใส่ภาพกราฟิกแสดงข้อมูลสวยงาม</p>
+            </div>
+            <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                <i class="fa-solid fa-video fa-3x text-success mb-3"></i>
+                <h5>VTR</h5>
+                <p>รวมวิดีโอแนะนำผลงานจาก YouTube</p>
+            </div>
+            <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+                <i class="fa-solid fa-gamepad fa-3x text-success mb-3"></i>
+                <h5>Game</h5>
+                <p>เชื่อมต่อกิจกรรมเกมจาก Kahoot! หรืออื่น ๆ</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ---------------- Footer ---------------- -->
+    <footer class="footer text-center">
+        © 2025 Nature Portfolio | Designed by Ice 🌱
+    </footer>
+
+    <!-- ---------------- Script ---------------- -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+    <script>
+        AOS.init();
+
+        // Loader Transition Effect
+        window.addEventListener("load", () => {
+            const loader = document.getElementById("transitionLoader");
+            setTimeout(() => {
+                loader.classList.add("hidden");
+            }, 500);
+        });
+    </script>
+</body>
+</html>
