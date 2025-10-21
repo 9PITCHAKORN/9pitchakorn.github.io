@@ -10,8 +10,25 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 <style>
 body 
-.banner { background:url('PIC/INFO.gif') center/cover no-repeat; height:420px; display:flex; align-items:center; justify-content:center; color:#fff; text-shadow:2px 2px 8px #000; font-size:2rem; }
-.navbar { background-color:#2e7d32; }
+.banner {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1920 / 420; /* ✅ อัตราส่วนของรูปภาพ */
+    background: url('PIC/infograp.gif') center center / cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-shadow: 2px 2px 8px #000;
+    font-size: 2rem;
+}
+
+/* สำหรับหน้าจอเล็ก ให้ลดขนาดข้อความในแบนเนอร์ */
+@media (max-width: 768px) {
+    .banner {
+        font-size: 1.4rem;
+    }
+}.navbar { background-color:#2e7d32; }
 .navbar a { color:white !important; font-weight:500; }
 .navbar a:hover { color:#c8e6c9 !important; }
 img.zoomable { cursor:pointer; transition:transform 0.3s; }
