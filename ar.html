@@ -7,12 +7,17 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
 <style>
+body { background: linear-gradient(#e0f2e9,#a8ddb5); }
+html { scroll-behavior: smooth; }
+
+/* ---------------- Banner ---------------- */
 .banner {
     position: relative;
     width: 100%;
     aspect-ratio: 1920 / 420; /* ✅ อัตราส่วนของรูปภาพ */
-    background: url('PIC/AR.gif') center center / cover no-repeat;
+    background: url('PIC/ar.gif') center center / cover no-repeat;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -20,54 +25,66 @@
     text-shadow: 2px 2px 8px #000;
     font-size: 2rem;
 }
-
-/* สำหรับหน้าจอเล็ก ให้ลดขนาดข้อความในแบนเนอร์ */
 @media (max-width: 768px) {
-    .banner {
-        font-size: 1.4rem;
-    }
+    .banner { font-size: 1.4rem; }
+}
+
+/* ---------------- Navbar ---------------- */
+.navbar {
+    background-color: #2e7d32;
+}
+.navbar a {
+    color: white !important;
+    font-weight: 500;
+}
+.navbar a:hover {
+    color: #c8e6c9 !important;
 }
 </style>
 </head>
 
-
 <body>
 
+<!-- ---------------- Navbar ---------------- -->
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="index.html">
+      <i class="fa-solid fa-leaf"></i> Ministry of Natural Resources and Environment
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link active" href="index.html"><i class="fa-solid fa-house"></i> หน้าแรก</a></li>
+        <li class="nav-item"><a class="nav-link" href="infograp.html"><i class="fa-solid fa-chart-pie"></i> Infographic</a></li>
+        <li class="nav-item"><a class="nav-link" href="vtr.html"><i class="fa-solid fa-video"></i> VTR</a></li>
+        <li class="nav-item"><a class="nav-link" href="game.html"><i class="fa-solid fa-gamepad"></i> Game</a></li>
+        <li class="nav-item"><a class="nav-link" href="Ar.html"><i class="fa-solid fa-vr-cardboard"></i> AR/VR</a></li>
+        <li class="nav-item"><a class="nav-link" href="ebook.html"><i class="fa-solid fa-book-open"></i> E-book</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
 
-    <!-- ---------------- Navbar ---------------- -->
-    <nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow">
-      <div class="container">
-        <a class="navbar-brand fw-bold" href="index.html">
-          <i class="fa-solid fa-leaf"></i> Ministry of Natural Resources and Environment
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navMenu">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link active" href="index.html"><i class="fa-solid fa-house"></i> หน้าแรก</a></li>
-            <li class="nav-item"><a class="nav-link" href="infograp.html"><i class="fa-solid fa-chart-pie"></i> Infographic</a></li>
-            <li class="nav-item"><a class="nav-link" href="vtr.html"><i class="fa-solid fa-video"></i> VTR</a></li>
-            <li class="nav-item"><a class="nav-link" href="game.html"><i class="fa-solid fa-gamepad"></i> Game</a></li>
-            <li class="nav-item"><a class="nav-link" href="ar.html"><i class="fa-solid fa-vr-cardboard"></i> AR/VR</a></li>
-            <li class="nav-item"><a class="nav-link" href="ebook.html"><i class="fa-solid fa-book-open"></i> E-book</a></li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-
-
+<!-- ---------------- Banner ---------------- -->
 <div class="banner"></div>
 
+<!-- ---------------- Section ---------------- -->
 <section class="container text-center my-5" data-aos="fade-up">
   <h3 class="text-success mb-3">นิทรรศการออนไลน์ (Spatial)</h3>
   <p>เข้าชมนิทรรศการ 3D ของตนเองไว้ที่นี่</p>
   <a href="https://www.spatial.io/s/LUNGPOTHs-Hi-Fi-Scene-68f75554ba3f7fff14685d55" target="_blank" class="btn btn-success btn-lg mt-3">
     <i class="fa-solid fa-vr-cardboard"></i> เข้าชมนิทรรศการ
-  </a><br><br><Br><br><br><br><br><Br>
+  </a>
 </section>
 
-<footer class="text-center p-3 bg-success text-white">© Ministry of Natural Resources and Environment | Designed by PITCHAKORN KAEWTAM 🌱</footer>
+<!-- ---------------- Footer ---------------- -->
+<footer class="text-center p-3 bg-success text-white">
+  © Ministry of Natural Resources and Environment | Designed by PITCHAKORN KAEWTAM 🌱
+</footer>
+
+<!-- ---------------- Scripts ---------------- -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
 <script>AOS.init();</script>
