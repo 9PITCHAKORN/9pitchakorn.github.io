@@ -8,12 +8,25 @@
 <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 <style>
-body { background:linear-gradient(#e0f2e9,#a8ddb5); }
-.banner { background:url('PIC/game.gif') center/cover no-repeat; height:420px; display:flex; align-items:center; justify-content:center; color:white; text-shadow:2px 2px 8px #000; font-size:2rem; }
-.navbar { background-color:#2e7d32; }
-.navbar a { color:white !important; font-weight:500; }
-.navbar a:hover { color:#c8e6c9 !important; }
-.btn-success:hover { background-color:#43a047; }
+.banner {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1920 / 420; /* ✅ อัตราส่วนของรูปภาพ */
+    background: url('PIC/game.gif') center center / cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-shadow: 2px 2px 8px #000;
+    font-size: 2rem;
+}
+
+/* สำหรับหน้าจอเล็ก ให้ลดขนาดข้อความในแบนเนอร์ */
+@media (max-width: 768px) {
+    .banner {
+        font-size: 1.4rem;
+    }
+}
 </style>
 </head>
 <body>
