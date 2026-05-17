@@ -1,4 +1,4 @@
-// ไฟล์ send-line.js (เวอร์ชันแสดงรายชื่อนักเรียนที่ไม่มา/สาย)
+// ไฟล์ send-line.js (เวอร์ชันสมบูรณ์ เพิ่ม Magic Link เข้า Dashboard)
 async function sendLineBot() {
     // 1. หาวันที่ปัจจุบัน (เวลาไทย)
     const date = new Date().toLocaleString("en-US", {timeZone: "Asia/Bangkok"});
@@ -39,7 +39,6 @@ async function sendLineBot() {
 
             if(status && counts[status] !== undefined) counts[status]++;
 
-            // จัดรูปแบบการแสดงผลรายชื่อ (ถ้ามีหมายเหตุมาสาย จะแสดงต่อท้าย)
             const studentInfo = `เลขที่ ${id} ${name}` + (remark ? ` (${remark})` : "");
 
             if (status === 'absent') absents.push(studentInfo);
@@ -61,7 +60,7 @@ async function sendLineBot() {
         msg += `⏰ สาย/มีกิจ: ${counts.late} คน\n`;
         msg += `-----------------`;
 
-        // 5. ระบบเพิ่มรายชื่อนักเรียนแยกตามสถานะ (จะแสดงเฉพาะกลุ่มที่มีคนเท่านั้น)
+        // 5. ระบบเพิ่มรายชื่อนักเรียนแยกตามสถานะ
         if (absents.length > 0) {
             msg += `\n\n❌ รายชื่อนักเรียนที่ [ขาด]:\n` + absents.map(s => `- ${s}`).join('\n');
         }
@@ -75,7 +74,9 @@ async function sendLineBot() {
             msg += `\n\n⏰ รายชื่อนักเรียนที่ [มาสาย/มีกิจ]:\n` + lates.map(s => `- ${s}`).join('\n');
         }
 
-        msg += `\n\n👉 ดูรายละเอียด: https://check-m2-2026.web.app`;
+        // 🟢 ฝังกุญแจลับ (key=WCMK2569) เข้าไปในลิงก์ Dashboard
+        msg += `\n\n🏠 หน้าเช็คชื่อ: https://check-m2-2026.web.app`;
+        msg += `\n📊 ดู Dashboard ทันที: https://check-m2-2026.web.app/dashboard.html?key=WCMK2569`;
 
         // 6. ส่งเข้า LINE Messaging API
         const lineToken = process.env.LINE_CHANNEL_TOKEN;

@@ -5,12 +5,18 @@ let students = [];
 let remarks = {}; 
 let isSystemOpen = true; 
 
+// 🟢 แก้ไขเรื่อง Timezone ให้ดึงวันที่ปัจจุบันของประเทศไทย (Local Time) อย่างถูกต้อง
 const dateInput = document.getElementById('attendanceDate');
-const todayStr = new Date().toISOString().split('T')[0];
-dateInput.value = todayStr;
-dateInput.max = todayStr; 
+const today = new Date();
+const yyyy = today.getFullYear();
+const mm = String(today.getMonth() + 1).padStart(2, '0');
+const dd = String(today.getDate()).padStart(2, '0');
+const todayStr = `${yyyy}-${mm}-${dd}`;
 
-// 🟢 โหลดรายชื่อผู้บันทึกจาก Collection "checkers" แทน
+dateInput.value = todayStr;
+dateInput.max = todayStr; // ล็อคไม่ให้เลือกวันอนาคตตามเวลาไทย
+
+// 🟢 โหลดรายชื่อผู้บันทึกจาก Collection "checkers"
 function loadCheckers() {
     onSnapshot(collection(db, "checkers"), (snapshot) => {
         const select = document.getElementById('checkerName');
@@ -66,7 +72,6 @@ async function loadAttendanceData() {
     let previousRecords = {};
     if(attSnap.exists()) {
         const data = attSnap.data();
-        // รอให้ dropdown โหลดเสร็จก่อนค่อยเซ็ตค่า
         setTimeout(() => {
             document.getElementById('checkerName').value = data.checkerName || '';
         }, 500);

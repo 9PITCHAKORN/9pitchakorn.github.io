@@ -1,43 +1,60 @@
+// 🟢 ระบบ Magic Link (Auto Login) จาก LINE
+const urlParams = new URLSearchParams(window.location.search);
+const secretKey = urlParams.get('key');
+
+if (secretKey === "WCMK2569") {
+    localStorage.setItem('userRole', 'teacher'); 
+    window.history.replaceState({}, document.title, window.location.pathname);
+}
+
+// 🟢 ระบบเช็คสิทธิ์ (ถ้าไม่ล็อกอิน จะเด้งกลับไปหน้าแรก)
 const userRole = localStorage.getItem('userRole');
 if(!userRole || userRole === 'student') window.location.href = "index.html";
 
 import { db } from './firebase-config.js';
-import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+import { doc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
 let myChart = null;
 let unsubscribe = null;
 
 const dateInput = document.getElementById('filterDate');
-dateInput.value = new Date().toISOString().split('T')[0];
+// ปรับ Timezone ให้เป็นเวลาไทย
+const today = new Date();
+const yyyy = today.getFullYear();
+const mm = String(today.getMonth() + 1).padStart(2, '0');
+const dd = String(today.getDate()).padStart(2, '0');
+dateInput.value = `${yyyy}-${mm}-${dd}`;
 
 function loadDashboardData() {
     const selectedDate = dateInput.value;
     document.getElementById('reportTitle').innerText = `รายงานการเช็คชื่อ ประจำวันที่ ${selectedDate}`;
     const tbody = document.getElementById('tableBody');
+    const deleteBtn = document.getElementById('deleteBtn');
+    
     tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลดข้อมูล...</td></tr>';
 
     if (unsubscribe) unsubscribe();
 
-    // ดึงข้อมูลรายวันตามวันที่เลือก
     unsubscribe = onSnapshot(doc(db, "attendance", selectedDate), (docSnap) => {
         if (!docSnap.exists()) {
             tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-red-500 font-bold">ไม่มีข้อมูลการเช็คชื่อในวันนี้</td></tr>';
             document.getElementById('reportMeta').innerHTML = '<i class="fa-solid fa-user-pen"></i> ผู้บันทึก: - | <i class="fa-solid fa-clock"></i> อัปเดตล่าสุด: -';
+            deleteBtn.classList.add('hidden'); 
             resetStats();
             return;
         }
 
+        deleteBtn.classList.remove('hidden'); 
+
         const data = docSnap.data();
         const records = data.records || [];
         
-        // จัดการเรื่องเวลาอัปเดตล่าสุด
         const tStamp = data.timestamp?.toDate();
         const timeStr = tStamp ? tStamp.toLocaleTimeString('th-TH') : '-';
         document.getElementById('reportMeta').innerHTML = `<i class="fa-solid fa-user-pen"></i> ผู้บันทึก: <b>${data.checkerName || '-'}</b> | <i class="fa-solid fa-clock"></i> อัปเดตล่าสุด: <b>${timeStr} น.</b>`;
 
         let counts = { present: 0, absent: 0, sick: 0, leave: 0, late: 0, total: records.length };
         
-        // เรียงลำดับตามเลขที่นักเรียน
         records.sort((a, b) => parseInt(a.studentId) - parseInt(b.studentId));
         
         tbody.innerHTML = '';
@@ -95,6 +112,20 @@ function renderChart(counts) {
         },
         options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
     });
+}
+
+window.deleteAttendance = async function() {
+    const selectedDate = document.getElementById('filterDate').value;
+    if(!selectedDate) return;
+    
+    if(confirm(`⚠️ คุณแน่ใจหรือไม่ว่าต้องการ "ลบข้อมูลการเช็คชื่อ" ของวันที่ ${selectedDate} ?\n\n(หากลบแล้วจะไม่สามารถกู้คืนได้)`)) {
+        try {
+            await deleteDoc(doc(db, "attendance", selectedDate));
+            alert("ลบข้อมูลเรียบร้อยแล้วครับ!");
+        } catch (error) {
+            alert("เกิดข้อผิดพลาดในการลบข้อมูล: " + error.message);
+        }
+    }
 }
 
 dateInput.addEventListener('change', loadDashboardData);
