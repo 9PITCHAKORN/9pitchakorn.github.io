@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบเช็คชื่อนักเรียน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap');
+        body { font-family: 'Sarabun', sans-serif; background-color: #f3f4f6; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-lg p-6 relative">
+        
+        <div class="flex justify-between items-start mb-6">
+            <div class="flex items-center space-x-3">
+                <label class="font-bold text-gray-700">วันที่:</label>
+                <input type="date" id="attendanceDate" class="p-2 border rounded-md bg-blue-50 text-blue-700 font-semibold focus:outline-none">
+            </div>
+            <button onclick="document.getElementById('loginModal').classList.remove('hidden')" class="text-gray-500 hover:text-blue-700 bg-gray-100 px-3 py-1 rounded-lg text-sm transition shadow-sm">
+                <i class="fa-solid fa-lock"></i> หลังบ้าน
+            </button>
+        </div>
+
+        <div class="text-center mb-6">
+            <h1 class="text-3xl font-bold text-blue-700 mb-2"><i class="fa-solid fa-clipboard-check"></i> ระบบเช็คชื่อประจำวัน</h1>
+            <p id="systemStatusMsg" class="text-sm font-semibold text-green-600 bg-green-100 inline-block px-3 py-1 rounded-full"><i class="fa-solid fa-door-open"></i> ระบบเปิดรับข้อมูล</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                <label class="block text-sm font-medium text-gray-700 mb-1">เลือกชื่อผู้บันทึก</label>
+                <select id="checkerName" class="w-full p-2 border border-gray-300 rounded-md"></select>
+            </div>
+            <div class="bg-orange-50 p-4 rounded-lg border border-orange-100 flex flex-col justify-center items-center text-center">
+                <label class="block text-sm font-medium text-gray-700 mb-2">บันทึกเด็กมาสาย / มีกิจระหว่างวัน</label>
+                <button onclick="openLateModal()" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md shadow w-full">
+                    <i class="fa-solid fa-clock"></i> จัดการเด็กมาสาย
+                </button>
+            </div>
+        </div>
+
+        <!-- เพิ่มปุ่ม "ล้างการเลือกทั้งหมด" ตรงนี้ -->
+        <div class="flex flex-wrap justify-between items-center mb-4 bg-gray-100 p-3 rounded-md border border-gray-200">
+            <span class="font-semibold text-gray-700"><i class="fa-solid fa-bolt"></i> จัดการรวดเร็ว:</span>
+            <div class="space-x-2 mt-2 md:mt-0 flex">
+                <button onclick="selectAll('present')" class="text-xs bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 shadow-sm">มาทั้งหมด</button>
+                <button onclick="selectAll('absent')" class="text-xs bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 shadow-sm">ขาดทั้งหมด</button>
+                <button onclick="clearAll()" class="text-xs bg-gray-500 text-white px-3 py-2 rounded hover:bg-gray-600 shadow-sm"><i class="fa-solid fa-eraser"></i> ล้างทั้งหมด</button>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse shadow-sm">
+                <thead>
+                    <tr class="bg-gray-800 text-white">
+                        <th class="p-3 rounded-tl-lg text-center">เลขที่</th>
+                        <th class="p-3">รหัส</th>
+                        <th class="p-3">ชื่อ - นามสกุล</th>
+                        <th class="p-3 text-center">สถานะ</th>
+                        <th class="p-3 rounded-tr-lg text-center">หมายเหตุ</th>
+                    </tr>
+                </thead>
+                <tbody id="studentList"></tbody>
+            </table>
+        </div>
+
+        <div class="mt-8 text-center">
+            <button id="submitBtn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-blue-700 transition transform hover:scale-105">
+                <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลเช็คชื่อ
+            </button>
+        </div>
+    </div>
+
+    <div id="loginModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-96">
+            <h2 class="text-xl font-bold mb-4 text-center text-gray-800"><i class="fa-solid fa-user-shield"></i> เข้าสู่ระบบ</h2>
+            <input type="text" id="loginUsername" placeholder="Username" class="w-full p-2 border rounded mb-3">
+            <input type="password" id="loginPassword" placeholder="Password" class="w-full p-2 border rounded mb-4">
+            <button id="loginBtn" class="w-full bg-blue-600 text-white py-2 rounded mb-2">เข้าสู่ระบบ</button>
+            <button onclick="document.getElementById('loginModal').classList.add('hidden')" class="w-full bg-gray-300 text-gray-700 py-2 rounded">ยกเลิก</button>
+        </div>
+    </div>
+
+    <div id="lateModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+            <h2 class="text-xl font-bold mb-4 text-orange-600 border-b pb-2"><i class="fa-solid fa-user-clock"></i> แจ้งนักเรียนมาสาย/มีกิจ</h2>
+            <label class="block text-sm mb-1">เลือกนักเรียน:</label>
+            <select id="lateStudentSelect" class="w-full p-2 border rounded mb-3"></select>
+            
+            <div class="flex gap-2 mb-4">
+                <div class="flex-1">
+                    <label class="block text-sm mb-1">เวลาที่มาถึง:</label>
+                    <input type="time" id="lateTime" class="w-full p-2 border rounded">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-sm mb-1">สถานะ:</label>
+                    <select id="lateType" class="w-full p-2 border rounded">
+                        <option value="late">มาสาย</option>
+                        <option value="excuse">มีกิจธุระ</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button id="saveLateBtn" class="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded font-bold mb-2">บันทึกหมายเหตุ</button>
+            <button onclick="document.getElementById('lateModal').classList.add('hidden')" class="w-full bg-gray-200 py-2 rounded">ปิด</button>
+        </div>
+    </div>
+
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>

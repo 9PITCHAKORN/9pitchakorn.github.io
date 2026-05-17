@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตั้งค่าระบบ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script> <!-- เพิ่ม SheetJS -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap');
+        body { font-family: 'Sarabun', sans-serif; background-color: #f3f4f6; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-lg p-6">
+        
+        <div class="flex justify-between items-center mb-6 pb-4 border-b">
+            <h1 class="text-2xl font-bold text-gray-800"><i class="fa-solid fa-gear"></i> ตั้งค่าระบบและจัดการข้อมูล</h1>
+            <div>
+                <a href="index.html" class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 mr-2"><i class="fa-solid fa-house"></i> หน้าแรก</a>
+                <a href="dashboard.html" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mr-2"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+                <button onclick="localStorage.removeItem('userRole'); window.location.href='index.html'" class="bg-red-500 text-white px-4 py-2 rounded"><i class="fa-solid fa-power-off"></i></button>
+            </div>
+        </div>
+
+        <!-- 1. ตั้งค่าระบบเปิด-ปิดเช็คชื่อ -->
+        <div id="systemControlArea" class="mb-8 hidden">
+            <h2 class="text-xl font-semibold mb-3 text-indigo-700"><i class="fa-solid fa-toggle-on"></i> 1. ควบคุมการเปิด-ปิดระบบเช็คชื่อ</h2>
+            <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200 flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div>
+                    <p class="font-bold text-gray-800">สถานะระบบหลัก:</p>
+                    <p class="text-sm text-gray-600">หากปิด ครูจะไม่สามารถบันทึกข้อมูลหน้าแรกได้</p>
+                </div>
+                <button id="toggleSystemBtn" class="px-6 py-2 rounded-full font-bold shadow"></button>
+            </div>
+            
+            <div class="bg-orange-50 p-4 rounded-lg border border-orange-200 mt-2 flex flex-col md:flex-row gap-4 items-center">
+                <p class="font-bold text-orange-700 whitespace-nowrap"><i class="fa-solid fa-clock-rotate-left"></i> เปิดชั่วคราวฉุกเฉิน:</p>
+                <input type="number" id="tempMins" placeholder="จำนวนนาที" class="p-2 border rounded w-32">
+                <button id="tempOpenBtn" class="bg-orange-500 text-white px-4 py-2 rounded shadow hover:bg-orange-600">ยืนยันเปิดชั่วคราว</button>
+                <span id="tempStatus" class="text-sm font-semibold text-orange-600 ml-2"></span>
+            </div>
+        </div>
+
+        <!-- 2. จัดการรายชื่อนักเรียน -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-3">
+                <h2 class="text-xl font-semibold text-blue-700"><i class="fa-solid fa-users"></i> 2. จัดการรายชื่อนักเรียน</h2>
+                <!-- 🟢 ปุ่มโหลดฟอร์ม และ อัปโหลดไฟล์ Excel -->
+                <div class="space-x-2 mt-2 md:mt-0 flex text-sm">
+                    <button onclick="downloadTemplate()" class="bg-green-50 text-green-700 px-3 py-2 rounded border border-green-300 hover:bg-green-100 transition shadow-sm"><i class="fa-solid fa-download"></i> โหลดฟอร์ม Excel</button>
+                    <label id="uploadLabel" class="bg-green-600 text-white px-3 py-2 rounded cursor-pointer hover:bg-green-700 shadow flex items-center transition">
+                        <i class="fa-solid fa-file-excel mr-1"></i> นำเข้าข้อมูล
+                        <input type="file" id="excelUpload" accept=".xlsx, .xls" class="hidden">
+                    </label>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-lg border mb-4 flex flex-wrap gap-2 items-end">
+                <input type="hidden" id="editDocId">
+                <div><label class="text-xs">เลขที่</label><input type="number" id="newStdId" class="p-2 border rounded w-24"></div>
+                <div><label class="text-xs">รหัสนักเรียน</label><input type="text" id="newStdCode" class="p-2 border rounded w-32"></div>
+                <div class="flex-1"><label class="text-xs">ชื่อ - นามสกุล</label><input type="text" id="newStdName" class="p-2 border rounded w-full"></div>
+                <button id="saveStdBtn" class="bg-blue-600 text-white px-4 py-2 rounded shadow"><i class="fa-solid fa-plus"></i> บันทึก</button>
+                <button onclick="resetForm()" class="bg-gray-400 text-white px-4 py-2 rounded shadow">ยกเลิก</button>
+            </div>
+            
+            <table class="w-full text-left border-collapse bg-white shadow-sm rounded-lg overflow-hidden">
+                <thead class="bg-gray-800 text-white"><tr><th class="p-3 text-center w-20">เลขที่</th><th class="p-3 w-32">รหัส</th><th class="p-3">ชื่อ</th><th class="p-3 text-center w-28">จัดการ</th></tr></thead>
+                <tbody id="studentSettingList"></tbody>
+            </table>
+        </div>
+
+        <!-- 3. ผู้ใช้งาน -->
+        <div id="adminArea" class="hidden mt-6">
+            <h2 class="text-xl font-semibold mb-3 text-red-600"><i class="fa-solid fa-user-shield"></i> 3. จัดการสิทธิ์ผู้ใช้งาน (เฉพาะแอดมิน)</h2>
+            <div class="bg-red-50 p-4 rounded-lg border border-red-200 mb-4 grid grid-cols-1 md:grid-cols-5 gap-2">
+                <input type="text" id="newUserName" placeholder="ชื่อ นามสกุล" class="p-2 border rounded col-span-2">
+                <input type="text" id="newUserLogin" placeholder="Username" class="p-2 border rounded">
+                <input type="password" id="newUserPass" placeholder="รหัสผ่าน" class="p-2 border rounded">
+                <select id="newUserRole" class="p-2 border rounded">
+                    <option value="student">นักเรียน (ดูไม่ได้)</option>
+                    <option value="teacher">ครู (จัดการเด็กได้)</option>
+                    <option value="admin">แอดมิน (คุมได้ทั้งหมด)</option>
+                </select>
+                <button id="addUserBtn" class="bg-red-600 text-white px-4 py-2 rounded md:col-span-5 shadow">เพิ่มผู้ใช้งาน</button>
+            </div>
+            <table class="w-full text-left border-collapse"><tbody id="userSettingList"></tbody></table>
+        </div>
+        
+    </div>
+    <script type="module" src="settings.js"></script>
+</body>
+</html>
