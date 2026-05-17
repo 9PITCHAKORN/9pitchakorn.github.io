@@ -10,12 +10,14 @@ const todayStr = new Date().toISOString().split('T')[0];
 dateInput.value = todayStr;
 dateInput.max = todayStr; 
 
-async function loadCheckers() {
-    const select = document.getElementById('checkerName');
-    select.innerHTML = '<option value="">-- เลือกผู้บันทึก --</option>';
-    const snap = await getDocs(collection(db, "users"));
-    snap.forEach((doc) => {
-        select.innerHTML += `<option value="${doc.data().name}">${doc.data().name} (${doc.data().role})</option>`;
+// 🟢 โหลดรายชื่อผู้บันทึกจาก Collection "checkers" แทน
+function loadCheckers() {
+    onSnapshot(collection(db, "checkers"), (snapshot) => {
+        const select = document.getElementById('checkerName');
+        select.innerHTML = '<option value="">-- เลือกผู้บันทึก --</option>';
+        snapshot.forEach((doc) => {
+            select.innerHTML += `<option value="${doc.data().name}">${doc.data().name}</option>`;
+        });
     });
 }
 
@@ -64,7 +66,11 @@ async function loadAttendanceData() {
     let previousRecords = {};
     if(attSnap.exists()) {
         const data = attSnap.data();
-        document.getElementById('checkerName').value = data.checkerName || '';
+        // รอให้ dropdown โหลดเสร็จก่อนค่อยเซ็ตค่า
+        setTimeout(() => {
+            document.getElementById('checkerName').value = data.checkerName || '';
+        }, 500);
+        
         data.records.forEach(r => {
             previousRecords[r.studentId] = r.status;
             if(r.remark) remarks[r.studentId] = r.remark;
@@ -113,17 +119,14 @@ window.selectAll = function(val) {
     });
 }
 
-// 🟢 ฟังก์ชันล้างการเลือกทั้งหมด
 window.clearAll = function() {
     students.forEach(s => {
         const rads = document.getElementsByName(`st_${s.id}`);
-        rads.forEach(r => r.checked = false); // เอาติ๊กออกให้หมด
-        
-        // ล้างหมายเหตุ (ถ้ามี)
+        rads.forEach(r => r.checked = false); 
         const remarkEl = document.getElementById(`remark_${s.id}`);
         if(remarkEl) remarkEl.innerText = '';
     });
-    remarks = {}; // เคลียร์ตัวแปรความจำหมายเหตุ
+    remarks = {}; 
 }
 
 window.openLateModal = () => document.getElementById('lateModal').classList.remove('hidden');

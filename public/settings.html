@@ -6,7 +6,7 @@
     <title>ตั้งค่าระบบ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script> <!-- เพิ่ม SheetJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap');
         body { font-family: 'Sarabun', sans-serif; background-color: #f3f4f6; }
@@ -25,7 +25,6 @@
             </div>
         </div>
 
-        <!-- 1. ตั้งค่าระบบเปิด-ปิดเช็คชื่อ -->
         <div id="systemControlArea" class="mb-8 hidden">
             <h2 class="text-xl font-semibold mb-3 text-indigo-700"><i class="fa-solid fa-toggle-on"></i> 1. ควบคุมการเปิด-ปิดระบบเช็คชื่อ</h2>
             <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200 flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -44,11 +43,9 @@
             </div>
         </div>
 
-        <!-- 2. จัดการรายชื่อนักเรียน -->
         <div class="mb-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-3">
                 <h2 class="text-xl font-semibold text-blue-700"><i class="fa-solid fa-users"></i> 2. จัดการรายชื่อนักเรียน</h2>
-                <!-- 🟢 ปุ่มโหลดฟอร์ม และ อัปโหลดไฟล์ Excel -->
                 <div class="space-x-2 mt-2 md:mt-0 flex text-sm">
                     <button onclick="downloadTemplate()" class="bg-green-50 text-green-700 px-3 py-2 rounded border border-green-300 hover:bg-green-100 transition shadow-sm"><i class="fa-solid fa-download"></i> โหลดฟอร์ม Excel</button>
                     <label id="uploadLabel" class="bg-green-600 text-white px-3 py-2 rounded cursor-pointer hover:bg-green-700 shadow flex items-center transition">
@@ -73,15 +70,26 @@
             </table>
         </div>
 
-        <!-- 3. ผู้ใช้งาน -->
-        <div id="adminArea" class="hidden mt-6">
-            <h2 class="text-xl font-semibold mb-3 text-red-600"><i class="fa-solid fa-user-shield"></i> 3. จัดการสิทธิ์ผู้ใช้งาน (เฉพาะแอดมิน)</h2>
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold mb-3 text-teal-700"><i class="fa-solid fa-user-pen"></i> 3. จัดการรายชื่อผู้บันทึก (แสดงในหน้าแรก)</h2>
+            <div class="bg-teal-50 p-4 rounded-lg border border-teal-200 mb-4 flex gap-2">
+                <input type="text" id="newCheckerName" placeholder="ชื่อหัวหน้าห้อง หรือครูประจำวิชา..." class="p-2 border rounded flex-1">
+                <button id="addCheckerBtn" class="bg-teal-600 text-white px-4 py-2 rounded shadow hover:bg-teal-700"><i class="fa-solid fa-plus"></i> เพิ่มรายชื่อ</button>
+            </div>
+            <table class="w-full text-left border-collapse bg-white shadow-sm rounded-lg overflow-hidden">
+                <thead class="bg-gray-800 text-white"><tr><th class="p-3">รายชื่อผู้มีสิทธิ์บันทึกข้อมูล</th><th class="p-3 text-center w-28">จัดการ</th></tr></thead>
+                <tbody id="checkerSettingList"></tbody>
+            </table>
+        </div>
+
+        <div id="adminArea" class="hidden mt-6 border-t-2 pt-6">
+            <h2 class="text-xl font-semibold mb-3 text-red-600"><i class="fa-solid fa-user-shield"></i> 4. บัญชีผู้ใช้งานหลังบ้าน (เฉพาะแอดมิน)</h2>
             <div class="bg-red-50 p-4 rounded-lg border border-red-200 mb-4 grid grid-cols-1 md:grid-cols-5 gap-2">
                 <input type="text" id="newUserName" placeholder="ชื่อ นามสกุล" class="p-2 border rounded col-span-2">
                 <input type="text" id="newUserLogin" placeholder="Username" class="p-2 border rounded">
                 <input type="password" id="newUserPass" placeholder="รหัสผ่าน" class="p-2 border rounded">
                 <select id="newUserRole" class="p-2 border rounded">
-                    <option value="student">นักเรียน (ดูไม่ได้)</option>
+                    <option value="student">นักเรียน (เข้าหลังบ้านไม่ได้)</option>
                     <option value="teacher">ครู (จัดการเด็กได้)</option>
                     <option value="admin">แอดมิน (คุมได้ทั้งหมด)</option>
                 </select>

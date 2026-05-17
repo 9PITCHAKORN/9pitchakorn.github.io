@@ -1,3 +1,4 @@
+// ไฟล์ send-line.js (เวอร์ชันแสดงรายชื่อนักเรียนที่ไม่มา/สาย)
 async function sendLineBot() {
     // 1. หาวันที่ปัจจุบัน (เวลาไทย)
     const date = new Date().toLocaleString("en-US", {timeZone: "Asia/Bangkok"});
@@ -20,18 +21,36 @@ async function sendLineBot() {
         
         const data = await res.json();
         
-        // 3. สรุปข้อมูล (เพิ่มระบบป้องกัน Error กรณีข้อมูลว่างเปล่าด้วย ?.)
+        // 3. เตรียมตัวแปรสรุปยอดและแยกรายชื่อ
         const records = data?.fields?.records?.arrayValue?.values || [];
         let counts = { present: 0, absent: 0, sick: 0, leave: 0, late: 0, total: records.length };
         
+        let absents = []; // ขาด
+        let sicks = [];    // ป่วย
+        let leaves = [];   // ลา
+        let lates = [];    // สาย
+
         records.forEach(r => {
-            const status = r?.mapValue?.fields?.status?.stringValue;
+            const fields = r?.mapValue?.fields;
+            const id = fields?.studentId?.integerValue || fields?.studentId?.stringValue || "";
+            const name = fields?.studentName?.stringValue || "";
+            const status = fields?.status?.stringValue;
+            const remark = fields?.remark?.stringValue || "";
+
             if(status && counts[status] !== undefined) counts[status]++;
+
+            // จัดรูปแบบการแสดงผลรายชื่อ (ถ้ามีหมายเหตุมาสาย จะแสดงต่อท้าย)
+            const studentInfo = `เลขที่ ${id} ${name}` + (remark ? ` (${remark})` : "");
+
+            if (status === 'absent') absents.push(studentInfo);
+            else if (status === 'sick') sicks.push(studentInfo);
+            else if (status === 'leave') leaves.push(studentInfo);
+            else if (status === 'late') lates.push(studentInfo);
         });
 
         const checker = data?.fields?.checkerName?.stringValue || "ไม่ระบุ";
 
-        // 4. จัดรูปแบบข้อความ
+        // 4. จัดรูปแบบข้อความส่วนหัวและสรุปยอด
         let msg = `📝 สรุปการเช็คชื่อประจำวัน\n📅 วันที่: ${dateStr}\n👤 ผู้บันทึก: ${checker}\n`;
         msg += `-----------------\n`;
         msg += `👥 นักเรียนทั้งหมด: ${counts.total} คน\n`;
@@ -40,10 +59,25 @@ async function sendLineBot() {
         msg += `🤒 ป่วย: ${counts.sick} คน\n`;
         msg += `💼 ลากิจ: ${counts.leave} คน\n`;
         msg += `⏰ สาย/มีกิจ: ${counts.late} คน\n`;
-        msg += `-----------------\n`;
-        msg += `👉 ดูรายละเอียด: https://check-m2-2026.web.app`;
+        msg += `-----------------`;
 
-        // 5. ส่งเข้า LINE Messaging API
+        // 5. ระบบเพิ่มรายชื่อนักเรียนแยกตามสถานะ (จะแสดงเฉพาะกลุ่มที่มีคนเท่านั้น)
+        if (absents.length > 0) {
+            msg += `\n\n❌ รายชื่อนักเรียนที่ [ขาด]:\n` + absents.map(s => `- ${s}`).join('\n');
+        }
+        if (sicks.length > 0) {
+            msg += `\n\n🤒 รายชื่อนักเรียนที่ [ป่วย]:\n` + sicks.map(s => `- ${s}`).join('\n');
+        }
+        if (leaves.length > 0) {
+            msg += `\n\n💼 รายชื่อนักเรียนที่ [ลากิจ]:\n` + leaves.map(s => `- ${s}`).join('\n');
+        }
+        if (lates.length > 0) {
+            msg += `\n\n⏰ รายชื่อนักเรียนที่ [มาสาย/มีกิจ]:\n` + lates.map(s => `- ${s}`).join('\n');
+        }
+
+        msg += `\n\n👉 ดูรายละเอียด: https://check-m2-2026.web.app`;
+
+        // 6. ส่งเข้า LINE Messaging API
         const lineToken = process.env.LINE_CHANNEL_TOKEN;
         const targetId = process.env.LINE_TARGET_ID;
 
