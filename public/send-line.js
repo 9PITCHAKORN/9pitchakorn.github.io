@@ -58,7 +58,7 @@ async function sendLineBot() {
         msg += `👥 นักเรียนทั้งหมด: ${counts.total} คน\n`;
         msg += `✅ มาเรียน: ${counts.present} คน\n`;
         msg += `❌ ขาดเรียน: ${counts.absent} คน\n`;
-        msg += `🤒 ป่วย: ${counts.sick}প্রতিষ্ঠ คน\n`;
+        msg += `🤒 ป่วย: ${counts.sick} คน\n`;
         msg += `💼 ลากิจ: ${counts.leave} คน\n`;
         msg += `⏰ สาย/มีกิจ: ${counts.late} คน\n`;
         msg += `-----------------`;
