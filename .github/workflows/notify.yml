@@ -1,0 +1,25 @@
+name: Send LINE Notify (10:00 AM)
+
+on:
+  schedule:
+    # เวลา 03:00 UTC ตรงกับเวลา 10:00 น. ของประเทศไทย
+    - cron: '0 3 * * *'
+  workflow_dispatch: # อนุญาตให้กดรันด้วยตัวเองบนเว็บ GitHub ได้
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Run LINE Notify Script
+        env:
+          LINE_CHANNEL_TOKEN: ${{ secrets.LINE_CHANNEL_TOKEN }}
+          LINE_TARGET_ID: ${{ secrets.LINE_TARGET_ID }}
+        run: node send-line.js
