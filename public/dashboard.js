@@ -1,15 +1,35 @@
-// 🟢 ระบบ Magic Link (Auto Login) จาก LINE
+// 🟢 1. ระบบคำนวณกุญแจลับประจำวัน (อิงตามเวลาประเทศไทย)
+const nowBKK = new Date().toLocaleString("en-US", {timeZone: "Asia/Bangkok"});
+const dObj = new Date(nowBKK);
+const yStr = dObj.getFullYear();
+const mStr = String(dObj.getMonth() + 1).padStart(2, '0');
+const dayStr = String(dObj.getDate()).padStart(2, '0');
+const todayDateStr = `${yStr}-${mStr}-${dayStr}`;
+
+// สูตรสร้างกุญแจ = วันที่ + รหัสผ่าน แล้วแปลงเป็น Base64
+const rawKey = `${todayDateStr}-WCMK2569`;
+const expectedKey = btoa(rawKey); 
+
+// 🟢 2. เช็คกุญแจลับจาก URL
 const urlParams = new URLSearchParams(window.location.search);
 const secretKey = urlParams.get('key');
 
-if (secretKey === "WCMK2569") {
-    localStorage.setItem('userRole', 'teacher'); 
-    window.history.replaceState({}, document.title, window.location.pathname);
+if (secretKey) {
+    if (secretKey === expectedKey) {
+        // ถ้ารหัสตรง (ลิงก์ของวันนี้) -> ให้สิทธิ์เข้าใช้งาน
+        localStorage.setItem('userRole', 'teacher'); 
+        window.history.replaceState({}, document.title, window.location.pathname);
+    } else {
+        // ถ้ารหัสไม่ตรง (ลิงก์ของเมื่อวาน / ลิงก์หมดอายุ)
+        alert('❌ ลิงก์นี้หมดอายุแล้วครับ (ลิงก์เข้าดูสถิติจะเปลี่ยนใหม่ทุกวัน)');
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
 }
 
-// 🟢 ระบบเช็คสิทธิ์ (ถ้าไม่ล็อกอิน จะเด้งกลับไปหน้าแรก)
+// 🟢 3. ระบบเช็คสิทธิ์เดิม (คนที่พิมพ์รหัสเข้าเองจากหน้าเว็บ ยังเข้าได้ปกติ)
 const userRole = localStorage.getItem('userRole');
 if(!userRole || userRole === 'student') window.location.href = "index.html";
+
 
 import { db } from './firebase-config.js';
 import { doc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
@@ -18,12 +38,7 @@ let myChart = null;
 let unsubscribe = null;
 
 const dateInput = document.getElementById('filterDate');
-// ปรับ Timezone ให้เป็นเวลาไทย
-const today = new Date();
-const yyyy = today.getFullYear();
-const mm = String(today.getMonth() + 1).padStart(2, '0');
-const dd = String(today.getDate()).padStart(2, '0');
-dateInput.value = `${yyyy}-${mm}-${dd}`;
+dateInput.value = todayDateStr; // ใช้วันที่ไทยที่คำนวณไว้ด้านบนได้เลย
 
 function loadDashboardData() {
     const selectedDate = dateInput.value;

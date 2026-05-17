@@ -1,4 +1,3 @@
-// ไฟล์ send-line.js (เวอร์ชันสมบูรณ์ เพิ่ม Magic Link เข้า Dashboard)
 async function sendLineBot() {
     // 1. หาวันที่ปัจจุบัน (เวลาไทย)
     const date = new Date().toLocaleString("en-US", {timeZone: "Asia/Bangkok"});
@@ -7,6 +6,10 @@ async function sendLineBot() {
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
     const dateStr = `${yyyy}-${mm}-${dd}`;
+
+    // 🟢 สร้างรหัสผ่านประจำวัน (วันที่ + WCMK2569) แล้วเข้ารหัส Base64
+    const rawKey = `${dateStr}-WCMK2569`;
+    const dailySecret = encodeURIComponent(Buffer.from(rawKey).toString('base64'));
 
     // 2. ดึงข้อมูลจาก Firebase ของโปรเจกต์
     const projectId = "check-m2-2026";
@@ -55,7 +58,7 @@ async function sendLineBot() {
         msg += `👥 นักเรียนทั้งหมด: ${counts.total} คน\n`;
         msg += `✅ มาเรียน: ${counts.present} คน\n`;
         msg += `❌ ขาดเรียน: ${counts.absent} คน\n`;
-        msg += `🤒 ป่วย: ${counts.sick} คน\n`;
+        msg += `🤒 ป่วย: ${counts.sick}প্রতিষ্ঠ คน\n`;
         msg += `💼 ลากิจ: ${counts.leave} คน\n`;
         msg += `⏰ สาย/มีกิจ: ${counts.late} คน\n`;
         msg += `-----------------`;
@@ -74,9 +77,9 @@ async function sendLineBot() {
             msg += `\n\n⏰ รายชื่อนักเรียนที่ [มาสาย/มีกิจ]:\n` + lates.map(s => `- ${s}`).join('\n');
         }
 
-        // 🟢 ฝังกุญแจลับ (key=WCMK2569) เข้าไปในลิงก์ Dashboard
+        // 🟢 ฝังกุญแจลับประจำวัน (เปลี่ยนอัตโนมัติทุกเที่ยงคืน) เข้าไปในลิงก์
         msg += `\n\n🏠 หน้าเช็คชื่อ: https://check-m2-2026.web.app`;
-        msg += `\n📊 ดู Dashboard ทันที: https://check-m2-2026.web.app/dashboard.html?key=WCMK2569`;
+        msg += `\n📊 ดูสรุปยอดรายวัน: https://check-m2-2026.web.app/dashboard.html?key=${dailySecret}`;
 
         // 6. ส่งเข้า LINE Messaging API
         const lineToken = process.env.LINE_CHANNEL_TOKEN;
