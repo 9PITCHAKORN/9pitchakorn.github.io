@@ -1,4 +1,3 @@
-// ไฟล์ send-line.js
 async function sendLineBot() {
     // 1. หาวันที่ปัจจุบัน (เวลาไทย)
     const date = new Date().toLocaleString("en-US", {timeZone: "Asia/Bangkok"});
@@ -15,21 +14,22 @@ async function sendLineBot() {
     try {
         const res = await fetch(url);
         if (!res.ok) {
-            console.log("ไม่มีข้อมูลเช็คชื่อของวันนี้ (อาจจะวันหยุด)");
+            console.log(`[ผ่าน] ไม่มีข้อมูลเช็คชื่อของวันที่ ${dateStr} (อาจจะยังไม่มีการบันทึกข้อมูล)`);
             return;
         }
+        
         const data = await res.json();
         
-        // 3. สรุปข้อมูล
-        const records = data.fields.records.arrayValue.values || [];
+        // 3. สรุปข้อมูล (เพิ่มระบบป้องกัน Error กรณีข้อมูลว่างเปล่าด้วย ?.)
+        const records = data?.fields?.records?.arrayValue?.values || [];
         let counts = { present: 0, absent: 0, sick: 0, leave: 0, late: 0, total: records.length };
         
         records.forEach(r => {
-            const status = r.mapValue.fields.status.stringValue;
-            if(counts[status] !== undefined) counts[status]++;
+            const status = r?.mapValue?.fields?.status?.stringValue;
+            if(status && counts[status] !== undefined) counts[status]++;
         });
 
-        const checker = data.fields.checkerName ? data.fields.checkerName.stringValue : "ไม่ระบุ";
+        const checker = data?.fields?.checkerName?.stringValue || "ไม่ระบุ";
 
         // 4. จัดรูปแบบข้อความ
         let msg = `📝 สรุปการเช็คชื่อประจำวัน\n📅 วันที่: ${dateStr}\n👤 ผู้บันทึก: ${checker}\n`;
@@ -48,7 +48,8 @@ async function sendLineBot() {
         const targetId = process.env.LINE_TARGET_ID;
 
         if(!lineToken || !targetId) {
-            console.error("ไม่พบ Token หรือ Target ID"); return;
+            console.error("[Error] ไม่พบ LINE_CHANNEL_TOKEN หรือ LINE_TARGET_ID ใน GitHub Secrets");
+            process.exit(1); 
         }
 
         const lineRes = await fetch("https://api.line.me/v2/bot/message/push", {
@@ -63,11 +64,16 @@ async function sendLineBot() {
             })
         });
         
-        if(lineRes.ok) console.log("ส่งแจ้งเตือน LINE สำเร็จ!");
-        else console.error("ส่งแจ้งเตือนล้มเหลว:", await lineRes.text());
+        if(lineRes.ok) {
+            console.log("✅ ส่งแจ้งเตือน LINE สำเร็จ!");
+        } else {
+            console.error("❌ ส่งแจ้งเตือนล้มเหลว:", await lineRes.text());
+            process.exit(1);
+        }
 
     } catch (error) {
-        console.error("เกิดข้อผิดพลาด:", error);
+        console.error("💥 เกิดข้อผิดพลาดรุนแรงในการรันสคริปต์:", error);
+        process.exit(1);
     }
 }
 
