@@ -21,4 +21,4 @@ jobs:
         env:
           LINE_CHANNEL_TOKEN: ${{ secrets.LINE_CHANNEL_TOKEN }}
           LINE_TARGET_ID: ${{ secrets.LINE_TARGET_ID }}
-        run: node send-line.js
+        run: node public/send-line.js
