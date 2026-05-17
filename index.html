@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบเช็คชื่อนักเรียน</title>
+    <!-- เรียกใช้ Tailwind CSS เพื่อความสวยงาม -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- เรียกใช้ Font Awesome สำหรับไอคอน -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap');
+        body { font-family: 'Sarabun', sans-serif; background-color: #f3f4f6; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-blue-700 mb-2"><i class="fa-solid fa-clipboard-user"></i> ระบบเช็คชื่อประจำวัน</h1>
+            <p class="text-gray-500" id="currentDate"></p>
+        </div>
+
+        <!-- ฟอร์มข้อมูลผู้กรอก -->
+        <div class="mb-6 bg-blue-50 p-4 rounded-lg border border-blue-100">
+            <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อผู้กรอก (หัวหน้าห้อง / ครูผู้สอน)</label>
+            <input type="text" id="checkerName" placeholder="ระบุชื่อผู้เช็ค..." class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        <!-- แถบเครื่องมือ เลือกทั้งหมด -->
+        <div class="flex flex-wrap justify-between items-center mb-4 bg-gray-100 p-3 rounded-md">
+            <span class="font-semibold text-gray-700">จัดการรวดเร็ว:</span>
+            <div class="space-x-2 mt-2 md:mt-0">
+                <button onclick="selectAll('present')" class="text-xs bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">มาทั้งหมด</button>
+                <button onclick="selectAll('absent')" class="text-xs bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">ขาดทั้งหมด</button>
+            </div>
+        </div>
+
+        <!-- รายชื่อนักเรียน (จะถูกสร้างด้วย JavaScript จากฐานข้อมูล) -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-800 text-white">
+                        <th class="p-3 rounded-tl-lg">เลขที่</th>
+                        <th class="p-3">ชื่อ - นามสกุล</th>
+                        <th class="p-3 rounded-tr-lg text-center">สถานะ</th>
+                    </tr>
+                </thead>
+                <tbody id="studentList">
+                    <!-- ข้อมูลจะถูก render ตรงนี้ -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ปุ่มบันทึก -->
+        <div class="mt-8 text-center">
+            <button id="submitBtn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-blue-700 transition transform hover:scale-105">
+                <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลเช็คชื่อ
+            </button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK (รูปแบบ Modular V9) -->
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
