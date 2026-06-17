@@ -1,8 +1,7 @@
 name: Send LINE Notify (10:00 AM)
 
 on:
-  schedule:
-    - cron: '0 3 * * *'
+
   workflow_dispatch: 
 
 jobs:
