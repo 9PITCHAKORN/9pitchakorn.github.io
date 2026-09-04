@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายงานการเข้าเรียนรายบุคคล - PDF</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; background-color: #f3f4f6; }
+        
+        #pdf-content {
+            background: white;
+            padding: 30px; 
+            margin: 0 auto;
+            box-sizing: border-box;
+            display: none; 
+            color: black;
+            width: 210mm;
+        }
+        .pdf-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .pdf-table th, .pdf-table td { border: 1px solid #000; padding: 8px; text-align: center; font-size: 16px; }
+        .pdf-table th { font-weight: bold; background-color: #f3f4f6 !important; }
+        
+        .signature-box { page-break-inside: avoid; margin-top: 60px; text-align: right; padding-right: 50px; }
+        
+        /* กล่องสรุปยอด */
+        .summary-stats { display: flex; justify-content: space-around; margin: 20px 0; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-weight: bold; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 mb-8 border-t-4 border-purple-500">
+        <div class="flex flex-wrap justify-between items-center mb-6 pb-4 border-b">
+            <h1 class="text-2xl font-bold text-gray-800">
+                <i class="fa-solid fa-user-check text-purple-600"></i> สร้างรายงานรายบุคคล
+            </h1>
+            <a href="dashboard.html" class="bg-gray-100 text-gray-700 px-4 py-2 rounded hover:bg-gray-200 mt-2 md:mt-0 transition shadow-sm font-semibold">
+                <i class="fa-solid fa-arrow-left"></i> กลับหน้า Dashboard
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">🔍 ระบุเลขที่นักเรียน</label>
+                <input type="number" id="inputStudentId" placeholder="เช่น 5" class="w-full p-2 border border-gray-300 rounded bg-gray-50 font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">📅 ตั้งแต่วันที่</label>
+                <input type="date" id="inputStartDate" class="w-full p-2 border border-gray-300 rounded bg-gray-50 font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">📅 ถึงวันที่</label>
+                <input type="date" id="inputEndDate" class="w-full p-2 border border-gray-300 rounded bg-gray-50 font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+        </div>
+
+        <div class="mb-6 p-4 bg-purple-50 rounded-lg border border-purple-100">
+            <div class="flex flex-wrap gap-6 items-center">
+                <label class="block text-sm font-bold text-gray-700 w-full md:w-auto">🎯 สถานะที่ต้องการให้แสดงในตาราง</label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" id="chk-absent" value="absent" checked class="w-5 h-5 text-red-600 rounded"> 
+                    <span class="font-medium text-gray-800">ขาดเรียน</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" id="chk-sick" value="sick" checked class="w-5 h-5 text-yellow-500 rounded"> 
+                    <span class="font-medium text-gray-800">ป่วย</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" id="chk-leave" value="leave" checked class="w-5 h-5 text-blue-500 rounded"> 
+                    <span class="font-medium text-gray-800">ลากิจ</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" id="chk-late" value="late" checked class="w-5 h-5 text-orange-500 rounded"> 
+                    <span class="font-medium text-gray-800">มาสาย</span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="mb-6">
+            <label class="block text-sm font-bold text-gray-700 mb-2">✍️ ผู้เซ็นรับรอง (ครูประจำชั้น)</label>
+            <select id="selectTeacher" class="w-full md:w-1/2 p-2 border border-gray-300 rounded bg-gray-50 font-semibold">
+                <option value="ว่าที่ร้อยเอกอัศมเดช จารุโสภณ">ว่าที่ร้อยเอกอัศมเดช จารุโสภณ</option>
+                <option value="นางสาวนุสบา บอนประโคน">นางสาวนุสบา บอนประโคน</option>
+            </select>
+        </div>
+
+        <div class="flex flex-wrap gap-4 mt-6">
+            <button onclick="generateReport()" class="bg-purple-600 text-white px-6 py-3 rounded shadow hover:bg-purple-700 transition font-bold flex-1 md:flex-none">
+                <i class="fa-solid fa-cloud-arrow-down"></i> 1. ดึงข้อมูลและสร้างรายงาน
+            </button>
+            <button onclick="exportToPDF()" class="bg-red-500 text-white px-6 py-3 rounded shadow hover:bg-red-600 transition font-bold flex-1 md:flex-none">
+                <i class="fa-solid fa-print"></i> 2. ดาวน์โหลด PDF (กระดาษขาว)
+            </button>
+        </div>
+    </div>
+
+    <!-- ส่วนเอกสาร PDF (กระดาษขาวล้วน) -->
+    <div id="pdf-content">
+        <h2 class="text-2xl font-bold text-center mb-1">รายงานสรุปการเข้าเรียนรายบุคคล</h2>
+        <h3 class="text-xl font-bold text-center mb-4">โรงเรียนวัดชัยมงคล</h3>
+        
+        <div class="text-center text-lg mb-2">
+            <b>ชื่อ-นามสกุล:</b> <span id="display-student-name" class="mr-4">.......................................</span> 
+            <b>เลขที่:</b> <span id="display-student-id">...</span>
+        </div>
+        <div class="text-center text-lg mb-4 text-gray-700" id="report-date-range">
+            ตั้งแต่วันที่ ... ถึงวันที่ ...
+        </div>
+
+        <div class="summary-stats">
+            <div class="text-red-600">ขาดเรียน: <span id="count-absent">0</span> ครั้ง</div>
+            <div class="text-yellow-600">ป่วย: <span id="count-sick">0</span> ครั้ง</div>
+            <div class="text-blue-600">ลากิจ: <span id="count-leave">0</span> ครั้ง</div>
+            <div class="text-orange-600">มาสาย: <span id="count-late">0</span> ครั้ง</div>
+        </div>
+        
+        <table class="pdf-table">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">ลำดับ</th>
+                    <th style="width: 35%;">วันที่</th>
+                    <th style="width: 25%;">สถานะ</th>
+                    <th style="width: 25%;">หมายเหตุ</th>
+                </tr>
+            </thead>
+            <tbody id="report-table-body"></tbody>
+        </table>
+
+        <div class="signature-box">
+            <p class="text-lg mb-4">ลงชื่อ......................................................ผู้รายงาน</p>
+            <p class="text-lg mb-2">( <span id="display-teacher-name"></span> )</p>
+            <p class="text-lg">ตำแหน่ง ครูประจำชั้น</p>
+        </div>
+    </div>
+
+    <script>
+        // ฟังก์ชันแปลงวันที่แบบสากลเป็นแบบไทย (เช่น 2026-09-01 -> 1 ก.ย. 2569)
+        function formatDateThai(dateString) {
+            if(!dateString) return "...";
+            const date = new Date(dateString);
+            const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+            return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear() + 543}`;
+        }
+
+        async function generateReport() {
+            const studentIdInput = document.getElementById('inputStudentId').value.trim();
+            const startDateInput = document.getElementById('inputStartDate').value;
+            const endDateInput = document.getElementById('inputEndDate').value;
+            const selectedTeacher = document.getElementById('selectTeacher').value;
+
+            if(!studentIdInput || !startDateInput || !endDateInput) {
+                alert("กรุณาระบุเลขที่นักเรียน และเลือกช่วงวันที่ให้ครบถ้วนครับ!");
+                return;
+            }
+
+            const startObj = new Date(startDateInput);
+            const endObj = new Date(endDateInput);
+            // ให้ endObj นับถึงสิ้นสุดวัน
+            endObj.setHours(23, 59, 59, 999);
+            
+            const filters = [];
+            if(document.getElementById('chk-absent').checked) filters.push('absent');
+            if(document.getElementById('chk-sick').checked) filters.push('sick');
+            if(document.getElementById('chk-leave').checked) filters.push('leave');
+            if(document.getElementById('chk-late').checked) filters.push('late');
+
+            document.getElementById('display-student-id').innerText = studentIdInput;
+            document.getElementById('display-teacher-name').innerText = selectedTeacher;
+            document.getElementById('report-date-range').innerText = `ตั้งแต่วันที่ ${formatDateThai(startDateInput)} ถึงวันที่ ${formatDateThai(endDateInput)}`;
+            
+            const tableBody = document.getElementById('report-table-body');
+            tableBody.innerHTML = "<tr><td colspan='4' style='padding: 20px; font-weight: bold;'>กำลังค้นหาข้อมูล... ⏳</td></tr>";
+            document.getElementById('pdf-content').style.display = 'block';
+
+            // รีเซ็ตยอดสรุป
+            let counts = { absent: 0, sick: 0, leave: 0, late: 0 };
+            let studentFullName = "ไม่พบรายชื่อ (อาจพิมพ์เลขที่ผิด)";
+
+            try {
+                const url = "https://firestore.googleapis.com/v1/projects/check-m2-2026/databases/(default)/documents/attendance?pageSize=100";
+                const response = await fetch(url);
+                const json = await response.json();
+                const docs = json.documents || [];
+                
+                let tableHTML = "";
+                let rowCount = 1;
+                
+                docs.sort((a, b) => a.name.localeCompare(b.name));
+
+                docs.forEach(doc => {
+                    const docName = doc.name.split('/').pop(); 
+                    // พยายามแปลงชื่อเอกสารเป็นวันที่เพื่อตรวจสอบว่าอยู่ในช่วงที่เลือกไหม
+                    let docDateObj = new Date(docName);
+                    // ถ้าระบบจำแบบ 01/09/2026 ต้องสลับก่อน
+                    if(docName.includes('/')) {
+                        const parts = docName.split('/');
+                        docDateObj = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+                    }
+
+                    // ถ้าระบุวันที่ได้ และวันที่อยู่ในช่วงที่เลือก
+                    if (docDateObj && docDateObj >= startObj && docDateObj <= endObj) {
+                        const fields = doc.fields;
+                        const records = fields.records && fields.records.arrayValue && fields.records.arrayValue.values || [];
+                        
+                        records.forEach(rec => {
+                            const f = rec.mapValue.fields;
+                            const id = f.studentId.integerValue || f.studentId.stringValue || "";
+                            
+                            // ถ้าตรงกับเลขที่เด็กที่ค้นหา
+                            if (id == studentIdInput) {
+                                const name = f.studentName.stringValue || "";
+                                const status = f.status.stringValue || "";
+                                const remark = f.remark && f.remark.stringValue ? f.remark.stringValue : "-";
+                                
+                                studentFullName = name; // บันทึกชื่อเด็กไว้แสดงบนหัวกระดาษ
+
+                                // เก็บสถิตินับยอด
+                                if(counts[status] !== undefined) counts[status]++;
+
+                                // แสดงในตารางเฉพาะสถานะที่ครูติ๊กเลือก
+                                if(filters.includes(status)) {
+                                    let statusTh = status === 'absent' ? 'ขาดเรียน' : (status === 'sick' ? 'ป่วย' : (status === 'leave' ? 'ลากิจ' : (status === 'late' ? 'มาสาย' : 'มาเรียน')));
+                                    let statusColor = status === 'absent' ? '#dc2626' : (status === 'sick' ? '#ca8a04' : (status === 'leave' ? '#2563eb' : (status === 'late' ? '#ea580c' : '#16a34a')));
+                                    
+                                    tableHTML += `<tr>
+                                                    <td>${rowCount++}</td>
+                                                    <td>${docName}</td>
+                                                    <td style="color: ${statusColor}; font-weight: bold;">${statusTh}</td>
+                                                    <td>${remark}</td>
+                                                  </tr>`;
+                                }
+                            }
+                        });
+                    }
+                });
+
+                document.getElementById('display-student-name').innerText = studentFullName;
+                document.getElementById('count-absent').innerText = counts.absent;
+                document.getElementById('count-sick').innerText = counts.sick;
+                document.getElementById('count-leave').innerText = counts.leave;
+                document.getElementById('count-late').innerText = counts.late;
+
+                if(tableHTML === "") {
+                    tableHTML = "<tr><td colspan='4' style='padding: 30px; color: gray;'>ไม่มีประวัติการ ขาด/ลา/มาสาย ในช่วงเวลาที่เลือกครับ 🎉</td></tr>";
+                }
+
+                tableBody.innerHTML = tableHTML;
+
+            } catch(err) {
+                tableBody.innerHTML = `<tr><td colspan='4' style='padding: 20px; color: red;'>🚨 ข้อผิดพลาด: ${err.message}</td></tr>`;
+            }
+        }
+
+        function exportToPDF() {
+            if(document.getElementById('pdf-content').style.display === 'none' || document.getElementById('report-table-body').innerHTML.includes('กำลังค้นหาข้อมูล')) {
+                alert("กรุณากดค้นหาข้อมูลให้เสร็จก่อนดาวน์โหลดครับ");
+                return;
+            }
+            
+            const element = document.getElementById('pdf-content');
+            const studentId = document.getElementById('inputStudentId').value;
+            
+            // ล้างเงาและพื้นหลังเพื่อความขาวสะอาดของกระดาษ
+            const originalShadow = element.style.boxShadow;
+            const originalBackground = element.style.background;
+            element.style.boxShadow = 'none';
+            element.style.background = '#ffffff';
+
+            const opt = {
+                margin:       [10, 10, 10, 10], 
+                filename:     `รายงานบุคคล_เลขที่${studentId}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: 'css', avoid: ['tr', '.signature-box'] }
+            };
+            
+            html2pdf().set(opt).from(element).save().then(() => {
+                element.style.boxShadow = originalShadow;
+                element.style.background = originalBackground;
+            });
+        }
+    </script>
+</body>
+</html>
