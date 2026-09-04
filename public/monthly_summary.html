@@ -1,167 +1,219 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <title>สรุปยอดการเข้าเรียนรายเดือน</title>
-  <!-- โหลดฟอนต์ Sarabun สำหรับงานเอกสารราชการ -->
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
-  <!-- โหลดไลบรารีแปลง PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  
-  <style>
-    body { font-family: 'Sarabun', sans-serif; background-color: #f4f4f9; padding: 20px; }
-    .control-panel { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    .form-group { margin-bottom: 15px; }
-    button { background: #2c3e50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
-    button:hover { background: #1a252f; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สรุปยอดรายเดือน - PDF</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
-    /* สไตล์สำหรับหน้ากระดาษ A4 ที่จะแปลงเป็น PDF */
-    #pdf-content {
-      background: white;
-      padding: 40px; /* ขอบกระดาษ */
-      width: 210mm;
-      min-height: 297mm;
-      margin: 0 auto;
-      box-sizing: border-box;
-      display: none; /* ซ่อนไว้ก่อน จะแสดงตอนกดสร้าง PDF */
-    }
-    h2, h3 { text-align: center; margin: 5px 0; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #000; padding: 8px; text-align: center; }
-    .signature-box { margin-top: 50px; text-align: right; padding-right: 30px; }
-  </style>
-</head>
-<body>
-
-  <!-- 🎛️ แผงควบคุม (Control Panel) -->
-  <div class="control-panel">
-    <h3>⚙️ ตั้งค่าเอกสารสรุปรายเดือน</h3>
-    
-    <div class="form-group">
-      <label><b>📅 เลือกเดือน:</b></label>
-      <select id="selectMonth">
-        <option value="08">สิงหาคม</option>
-        <option value="09">กันยายน</option>
-        <option value="10">ตุลาคม</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label><b>🎯 เลือกสถานะที่ต้องการแสดง:</b></label><br>
-      <input type="checkbox" id="chk-absent" value="absent" checked> <label>ขาดเรียน</label>
-      <input type="checkbox" id="chk-sick" value="sick" checked> <label>ป่วย</label>
-      <input type="checkbox" id="chk-leave" value="leave"> <label>ลากิจ</label>
-      <input type="checkbox" id="chk-late" value="late"> <label>มาสาย</label>
-    </div>
-
-    <div class="form-group">
-      <label><b>✍️ ผู้เซ็นรับรอง (ครูประจำชั้น):</b></label>
-      <select id="selectTeacher">
-        <option value="ว่าที่ร้อยเอกอัษฎเดช จารุโสภณ">ว่าที่ร้อยเอกอัษฎเดช จารุโสภณ</option>
-        <option value="ครูแตงโม">ครูแตงโม</option>
-      </select>
-    </div>
-
-    <button onclick="generateReport()">1. กดดูตัวอย่างรายงาน</button>
-    <button onclick="exportToPDF()" style="background-color: #e74c3c;">2. 📄 ดาวน์โหลดเป็น PDF</button>
-  </div>
-
-  <!-- 📄 ส่วนที่จะถูกแคปเจอร์เป็นไฟล์ PDF (A4) -->
-  <div id="pdf-content">
-    <h2>รายงานสรุปการเข้าเรียน (เฉพาะผู้ขาด/ลา/มาสาย)</h2>
-    <h3>โรงเรียนวัดชัยมงคล</h3>
-    <h4 style="text-align: center;" id="report-month-title">ประจำเดือน: -</h4>
-    
-    <table>
-      <thead>
-        <tr>
-          <th width="20%">วันที่</th>
-          <th width="15%">เลขที่</th>
-          <th width="45%">ชื่อ - นามสกุล</th>
-          <th width="20%">สถานะ</th>
-        </tr>
-      </thead>
-      <tbody id="report-table-body">
-        <!-- ข้อมูลนักเรียนจะถูกเติมลงที่นี่ด้วย JavaScript -->
-      </tbody>
-    </table>
-
-    <div class="signature-box">
-      <p>ลงชื่อ......................................................ผู้รายงาน</p>
-      <p>( <span id="display-teacher-name"></span> )</p>
-      <p>ตำแหน่ง ครูประจำชั้น</p>
-    </div>
-  </div>
-
-  <script>
-    // 🟢 ฟังก์ชัน 1: ดึงข้อมูลและสร้างตารางตัวอย่าง (จำลองข้อมูล Firebase)
-    function generateReport() {
-      // 1. ดึงค่าจากหน้าจอ
-      const selectedMonthText = document.getElementById('selectMonth').options[document.getElementById('selectMonth').selectedIndex].text;
-      const selectedTeacher = document.getElementById('selectTeacher').value;
-      
-      // เช็คว่าติ๊กสถานะไหนบ้าง
-      const filters = [];
-      if(document.getElementById('chk-absent').checked) filters.push('absent');
-      if(document.getElementById('chk-sick').checked) filters.push('sick');
-      if(document.getElementById('chk-leave').checked) filters.push('leave');
-      if(document.getElementById('chk-late').checked) filters.push('late');
-
-      // 2. อัปเดตข้อความในกระดาษ PDF
-      document.getElementById('report-month-title').innerText = "ประจำเดือน: " + selectedMonthText;
-      document.getElementById('display-teacher-name').innerText = selectedTeacher;
-
-      // 3. จำลองข้อมูล (ตรงนี้ครูต้องเชื่อมกับโค้ดดึงข้อมูลจาก Firebase ของจริง)
-      const mockData = [
-        { date: '1 ส.ค. 2569', id: '5', name: 'เด็กชายสมชาย ใจดี', status: 'absent' },
-        { date: '1 ส.ค. 2569', id: '12', name: 'เด็กหญิงสมหญิง รักเรียน', status: 'sick' },
-        { date: '2 ส.ค. 2569', id: '5', name: 'เด็กชายสมชาย ใจดี', status: 'leave' }
-      ];
-
-      // 4. กรองและวาดตาราง
-      let tableHTML = "";
-      mockData.forEach(row => {
-        // กรองเฉพาะสถานะที่ครูติ๊กเลือก
-        if(filters.includes(row.status)) {
-          let statusTh = row.status === 'absent' ? 'ขาด' : (row.status === 'sick' ? 'ป่วย' : (row.status === 'leave' ? 'ลากิจ' : 'มาสาย'));
-          tableHTML += `<tr>
-                          <td>${row.date}</td>
-                          <td>${row.id}</td>
-                          <td style="text-align: left;">${row.name}</td>
-                          <td>${statusTh}</td>
-                        </tr>`;
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; background-color: #f3f4f6; }
+        
+        #pdf-content {
+            background: white;
+            padding: 40px;
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            box-sizing: border-box;
+            display: none; 
+            color: black;
         }
-      });
+        .pdf-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .pdf-table th, .pdf-table td { border: 1px solid #000; padding: 8px; text-align: center; font-size: 16px; }
+        .pdf-table th { font-weight: bold; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
 
-      if(tableHTML === "") {
-        tableHTML = "<tr><td colspan='4'>ไม่มีข้อมูลตามเงื่อนไขที่เลือก</td></tr>";
-      }
+    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 mb-8 border-t-4 border-blue-500">
+        <div class="flex flex-wrap justify-between items-center mb-6 pb-4 border-b">
+            <h1 class="text-2xl font-bold text-gray-800">
+                <i class="fa-solid fa-file-pdf text-red-500"></i> สร้างเอกสารรายงานรายเดือน
+            </h1>
+            <a href="dashboard.html" class="bg-gray-100 text-gray-700 px-4 py-2 rounded hover:bg-gray-200 mt-2 md:mt-0 transition shadow-sm font-semibold">
+                <i class="fa-solid fa-arrow-left"></i> กลับหน้า Dashboard
+            </a>
+        </div>
 
-      document.getElementById('report-table-body').innerHTML = tableHTML;
-      
-      // แสดงหน้ากระดาษจำลอง
-      document.getElementById('pdf-content').style.display = 'block';
-    }
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">📅 เลือกเดือนที่ต้องการสรุป</label>
+                <select id="selectMonth" class="w-full p-2 border border-gray-300 rounded bg-gray-50 font-semibold">
+                    <option value="01">มกราคม</option>
+                    <option value="02">กุมภาพันธ์</option>
+                    <option value="03">มีนาคม</option>
+                    <option value="04">เมษายน</option>
+                    <option value="05">พฤษภาคม</option>
+                    <option value="06">มิถุนายน</option>
+                    <option value="07">กรกฎาคม</option>
+                    <option value="08">สิงหาคม</option>
+                    <option value="09" selected>กันยายน</option>
+                    <option value="10">ตุลาคม</option>
+                    <option value="11">พฤศจิกายน</option>
+                    <option value="12">ธันวาคม</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">✍️ ผู้เซ็นรับรอง (ครูประจำชั้น)</label>
+                <select id="selectTeacher" class="w-full p-2 border border-gray-300 rounded bg-gray-50 font-semibold">
+                    <option value="ว่าที่ร้อยเอกอัษฎเดช จารุโสภณ">ว่าที่ร้อยเอกอัษฎเดช จารุโสภณ</option>
+                    <option value="ครูไอซ์">ครูไอซ์</option>
+                </select>
+            </div>
+        </div>
 
-    // 🟢 ฟังก์ชัน 2: ส่งออกเป็น PDF
-    function exportToPDF() {
-      // ต้องกดปุ่มสร้างตัวอย่างก่อนถึงจะเซฟได้
-      if(document.getElementById('pdf-content').style.display === 'none') {
-        alert("กรุณากด 'ดูตัวอย่างรายงาน' ก่อนดาวน์โหลดครับ");
-        return;
-      }
+        <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
+            <label class="block text-sm font-bold text-gray-700 mb-3">🎯 เลือกข้อมูลที่ต้องการให้แสดง</label>
+            <div class="flex flex-wrap gap-6">
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" id="chk-absent" value="absent" checked class="w-5 h-5 text-red-600 rounded"> 
+                    <span class="font-medium text-gray-800">ขาดเรียน</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" id="chk-sick" value="sick" checked class="w-5 h-5 text-yellow-500 rounded"> 
+                    <span class="font-medium text-gray-800">ป่วย</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" id="chk-leave" value="leave" checked class="w-5 h-5 text-blue-500 rounded"> 
+                    <span class="font-medium text-gray-800">ลากิจ</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" id="chk-late" value="late" class="w-5 h-5 text-orange-500 rounded"> 
+                    <span class="font-medium text-gray-800">มาสาย</span>
+                </label>
+            </div>
+        </div>
 
-      const element = document.getElementById('pdf-content');
-      const opt = {
-        margin:       0,
-        filename:     'สรุปเวลาเรียน_ม2.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 }, // ความละเอียดชัดเจน
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' } // กระดาษ A4 แนวตั้ง
-      };
+        <div class="flex flex-wrap gap-4 mt-6">
+            <button onclick="generateReport()" class="bg-blue-600 text-white px-6 py-3 rounded shadow hover:bg-blue-700 transition font-bold flex-1 md:flex-none">
+                <i class="fa-solid fa-cloud-arrow-down"></i> 1. ดึงข้อมูลและสร้างรายงาน
+            </button>
+            <button onclick="exportToPDF()" class="bg-red-500 text-white px-6 py-3 rounded shadow hover:bg-red-600 transition font-bold flex-1 md:flex-none">
+                <i class="fa-solid fa-print"></i> 2. ดาวน์โหลด PDF
+            </button>
+        </div>
+    </div>
 
-      html2pdf().set(opt).from(element).save();
-    }
-  </script>
+    <!-- ส่วนเอกสาร PDF -->
+    <div id="pdf-content" class="shadow-2xl">
+        <h2 class="text-2xl font-bold text-center mb-1">รายงานสรุปการเข้าเรียน</h2>
+        <h3 class="text-xl font-bold text-center mb-1">โรงเรียนวัดชัยมงคล</h3>
+        <h4 class="text-lg text-center mb-6" id="report-month-title">ประจำเดือน: -</h4>
+        
+        <table class="pdf-table">
+            <thead>
+                <tr style="background-color: #f3f4f6;">
+                    <th style="width: 20%;">วันที่</th>
+                    <th style="width: 15%;">เลขที่</th>
+                    <th style="width: 45%;">ชื่อ - นามสกุล</th>
+                    <th style="width: 20%;">สถานะ</th>
+                </tr>
+            </thead>
+            <tbody id="report-table-body"></tbody>
+        </table>
+
+        <div class="mt-24 text-right pr-12">
+            <p class="text-lg mb-4">ลงชื่อ......................................................ผู้รายงาน</p>
+            <p class="text-lg mb-2">( <span id="display-teacher-name"></span> )</p>
+            <p class="text-lg">ตำแหน่ง ครูประจำชั้น</p>
+        </div>
+    </div>
+
+    <script>
+        async function generateReport() {
+            const monthSelect = document.getElementById('selectMonth');
+            const selectedMonth = monthSelect.value;
+            const selectedMonthText = monthSelect.options[monthSelect.selectedIndex].text;
+            const selectedTeacher = document.getElementById('selectTeacher').value;
+            
+            const filters = [];
+            if(document.getElementById('chk-absent').checked) filters.push('absent');
+            if(document.getElementById('chk-sick').checked) filters.push('sick');
+            if(document.getElementById('chk-leave').checked) filters.push('leave');
+            if(document.getElementById('chk-late').checked) filters.push('late');
+
+            document.getElementById('report-month-title').innerText = "ประจำเดือน: " + selectedMonthText;
+            document.getElementById('display-teacher-name').innerText = selectedTeacher;
+            
+            const tableBody = document.getElementById('report-table-body');
+            tableBody.innerHTML = "<tr><td colspan='4' style='padding: 20px; font-weight: bold;'>กำลังดึงข้อมูล... ⏳</td></tr>";
+            document.getElementById('pdf-content').style.display = 'block';
+
+            try {
+                const url = "https://firestore.googleapis.com/v1/projects/check-m2-2026/databases/(default)/documents/attendance?pageSize=100";
+                const response = await fetch(url);
+                const json = await response.json();
+                const docs = json.documents || [];
+                
+                let tableHTML = "";
+                let hasData = false;
+                
+                docs.sort((a, b) => a.name.localeCompare(b.name));
+
+                docs.forEach(doc => {
+                    const docName = doc.name.split('/').pop(); 
+                    
+                    if (docName.includes(`-${selectedMonth}-`) || docName.includes(`/${selectedMonth}/`) || docName.substring(5,7) === selectedMonth) {
+                        
+                        const fields = doc.fields;
+                        const records = fields.records && fields.records.arrayValue && fields.records.arrayValue.values || [];
+                        
+                        records.forEach(rec => {
+                            const f = rec.mapValue.fields;
+                            const id = f.studentId.integerValue || f.studentId.stringValue || "";
+                            const name = f.studentName.stringValue || "";
+                            const status = f.status.stringValue || "";
+                            
+                            if(filters.includes(status)) {
+                                hasData = true;
+                                let statusTh = status === 'absent' ? 'ขาดเรียน' : (status === 'sick' ? 'ป่วย' : (status === 'leave' ? 'ลากิจ' : 'มาสาย'));
+                                let statusColor = status === 'absent' ? '#ef4444' : (status === 'sick' ? '#eab308' : (status === 'leave' ? '#3b82f6' : '#f97316'));
+                                
+                                tableHTML += `<tr>
+                                                <td>${docName}</td>
+                                                <td>${id}</td>
+                                                <td style="text-align: left; padding-left: 15px;">${name}</td>
+                                                <td style="color: ${statusColor}; font-weight: bold;">${statusTh}</td>
+                                              </tr>`;
+                            }
+                        });
+                    }
+                });
+
+                if(!hasData) {
+                    tableHTML = "<tr><td colspan='4' style='padding: 30px; color: gray;'>ไม่มีข้อมูลในเดือนที่เลือกครับ</td></tr>";
+                }
+
+                tableBody.innerHTML = tableHTML;
+
+            } catch(err) {
+                tableBody.innerHTML = `<tr><td colspan='4' style='padding: 20px; color: red;'>🚨 ข้อผิดพลาด: ${err.message}</td></tr>`;
+            }
+        }
+
+        function exportToPDF() {
+            if(document.getElementById('pdf-content').style.display === 'none' || document.getElementById('report-table-body').innerHTML.includes('กำลังดึงข้อมูล')) {
+                alert("กรุณากดดึงข้อมูลก่อนดาวน์โหลดครับ");
+                return;
+            }
+            
+            const element = document.getElementById('pdf-content');
+            const selectedMonthText = document.getElementById('selectMonth').options[document.getElementById('selectMonth').selectedIndex].text;
+            
+            const opt = {
+                margin:       0,
+                filename:     `สรุปเข้าเรียน_เดือน_${selectedMonthText}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
 </body>
 </html>
