@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สรุปการเข้าเรียนประจำเดือน</title>
+    <!-- โหลดไลบรารีสำหรับแปลง PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f4f4f9; margin: 0; padding: 20px; }
+        .control-panel { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .control-panel label { font-weight: bold; margin-right: 10px; }
+        .control-panel select, .control-panel button { padding: 8px; margin-right: 20px; border-radius: 4px; border: 1px solid #ccc; font-family: 'Sarabun', sans-serif; }
+        .btn-pdf { background-color: #E74C3C; color: white; border: none; cursor: pointer; font-weight: bold; }
+        .btn-pdf:hover { background-color: #c0392b; }
+        
+        /* ตั้งค่าหน้ากระดาษ A4 เสมือนจริง */
+        #pdf-a4-area {
+            background: white;
+            width: 210mm; /* ขนาดความกว้าง A4 */
+            min-height: 297mm; /* ขนาดความสูง A4 */
+            padding: 20mm;
+            margin: 0 auto;
+            box-sizing: border-box;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; text-align: center; }
+        th, td { border: 1px solid #000; padding: 8px; }
+        th { background-color: #f2f2f2; }
+        .signature-box { text-align: right; margin-top: 80px; }
+    </style>
+</head>
+<body>
+
+    <!-- 🎛️ แผงควบคุม (ส่วนนี้จะไม่ไปโผล่ใน PDF) -->
+    <div class="control-panel" id="controls">
+        <label>🗓️ เลือกเดือน:</label>
+        <select id="monthSelect">
+            <option value="01">มกราคม</option>
+            <option value="02">กุมภาพันธ์</option>
+            <option value="03">มีนาคม</option>
+            <option value="04">เมษายน</option>
+            <option value="05">พฤษภาคม</option>
+            <option value="06">มิถุนายน</option>
+            <option value="07">กรกฎาคม</option>
+            <option value="08">สิงหาคม</option>
+            <option value="09">กันยายน</option>
+            <option value="10">ตุลาคม</option>
+            <option value="11">พฤศจิกายน</option>
+            <option value="12">ธันวาคม</option>
+        </select>
+
+        <label>🔍 คัดกรองสถานะ:</label>
+        <select id="statusFilter">
+            <option value="all">แสดงทั้งหมด</option>
+            <option value="absent_sick">เฉพาะ ขาดเรียน และ ลาป่วย</option>
+        </select>
+
+        <label>✍️ ผู้ลงนาม:</label>
+        <select id="teacherSelect" onchange="updateSignature()">
+            <option value="ว่าที่ ร.อ. อัษฎเดช จารุโสภณ">ว่าที่ ร.อ. อัษฎเดช จารุโสภณ</option>
+            <option value="ผู้อำนวยการโรงเรียน">ผู้อำนวยการโรงเรียน</option>
+        </select>
+
+        <button class="btn-pdf" onclick="exportMonthlyPDF()">📄 ดาวน์โหลด PDF</button>
+    </div>
+
+    <!-- 📄 กรอบกระดาษ A4 ที่จะถูกแปลงเป็น PDF -->
+    <div id="pdf-a4-area">
+        <h2 style="text-align: center;">สรุปสถิติการเข้าเรียนประจำเดือน</h2>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>วันที่</th>
+                    <th>เลขที่</th>
+                    <th>ชื่อ-สกุล</th>
+                    <th>สถานะ</th>
+                </tr>
+            </thead>
+            <tbody id="summaryTableBody">
+                <!-- ข้อมูลตัวอย่าง (เดี๋ยวเราจะเอาข้อมูลจาก Firebase มาใส่แทนที่ตรงนี้) -->
+                <tr>
+                    <td>01/08/2026</td>
+                    <td>1</td>
+                    <td>ด.ช. ทดสอบ ระบบ</td>
+                    <td>ขาดเรียน</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ส่วนเซ็นรับรองท้ายกระดาษ -->
+        <div class="signature-box">
+            <p>ลงชื่อ......................................................ผู้รับรอง</p>
+            <p>( <span id="displaySignature">ว่าที่ ร.อ. อัษฎเดช จารุโสภณ</span> )</p>
+        </div>
+    </div>
+
+    <script>
+        // ฟังก์ชันอัปเดตชื่อคนเซ็นแบบ Real-time
+        function updateSignature() {
+            var selectedTeacher = document.getElementById('teacherSelect').value;
+            document.getElementById('displaySignature').innerText = selectedTeacher;
+        }
+
+        // ฟังก์ชันสั่งดาวน์โหลด PDF
+        function exportMonthlyPDF() {
+            var element = document.getElementById('pdf-a4-area');
+            var selectedMonth = document.getElementById('monthSelect').options[document.getElementById('monthSelect').selectedIndex].text;
+            
+            var opt = {
+                margin:       0, // ตั้งขอบเป็น 0 เพราะเราเผื่อ padding ไว้ใน CSS แล้ว
+                filename:     'สรุปการเข้าเรียน_เดือน_' + selectedMonth + '.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'A4', orientation: 'portrait' }
+            };
+
+            // ซ่อนปุ่มหรือหน้าต่างที่ไม่อยากให้ออก PDF (ถ้ามี) แล้วสั่งพิมพ์
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+</body>
+</html>
