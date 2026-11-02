@@ -14,20 +14,22 @@
         
         #pdf-content {
             background: white;
-            padding: 30px; 
+            /* ใช้ padding ของ HTML กำหนดขอบกระดาษแทน */
+            padding: 40px 50px; 
             margin: 0 auto;
             box-sizing: border-box;
             display: none; 
             color: black;
-            width: 210mm;
+            /* ล็อกความกว้างให้เป๊ะเท่ากับ A4 (96 DPI) เพื่อกันการตกขอบ */
+            width: 794px; 
+            max-width: none;
         }
         .pdf-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         .pdf-table th, .pdf-table td { border: 1px solid #000; padding: 8px; text-align: center; font-size: 16px; }
         .pdf-table th { font-weight: bold; background-color: #f3f4f6 !important; }
         
-        .signature-box { page-break-inside: avoid; margin-top: 60px; text-align: right; padding-right: 50px; }
+        .signature-box { page-break-inside: avoid; margin-top: 60px; text-align: right; padding-right: 20px; }
         
-        /* กล่องสรุปยอด */
         .summary-stats { display: flex; justify-content: space-around; margin: 20px 0; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-weight: bold; }
     </style>
 </head>
@@ -98,7 +100,7 @@
         </div>
     </div>
 
-    <!-- ส่วนเอกสาร PDF (กระดาษขาวล้วน) -->
+    <!-- ส่วนเอกสาร PDF -->
     <div id="pdf-content">
         <h2 class="text-2xl font-bold text-center mb-1">รายงานสรุปการเข้าเรียนรายบุคคล</h2>
         <h3 class="text-xl font-bold text-center mb-4">โรงเรียนวัดชัยมงคล</h3>
@@ -138,7 +140,6 @@
     </div>
 
     <script>
-        // ฟังก์ชันแปลงวันที่แบบสากลเป็นแบบไทย (เช่น 2026-09-01 -> 1 ก.ย. 2569)
         function formatDateThai(dateString) {
             if(!dateString) return "...";
             const date = new Date(dateString);
@@ -159,7 +160,6 @@
 
             const startObj = new Date(startDateInput);
             const endObj = new Date(endDateInput);
-            // ให้ endObj นับถึงสิ้นสุดวัน
             endObj.setHours(23, 59, 59, 999);
             
             const filters = [];
@@ -176,7 +176,6 @@
             tableBody.innerHTML = "<tr><td colspan='4' style='padding: 20px; font-weight: bold;'>กำลังค้นหาข้อมูล... ⏳</td></tr>";
             document.getElementById('pdf-content').style.display = 'block';
 
-            // รีเซ็ตยอดสรุป
             let counts = { absent: 0, sick: 0, leave: 0, late: 0 };
             let studentFullName = "ไม่พบรายชื่อ (อาจพิมพ์เลขที่ผิด)";
 
@@ -193,15 +192,13 @@
 
                 docs.forEach(doc => {
                     const docName = doc.name.split('/').pop(); 
-                    // พยายามแปลงชื่อเอกสารเป็นวันที่เพื่อตรวจสอบว่าอยู่ในช่วงที่เลือกไหม
                     let docDateObj = new Date(docName);
-                    // ถ้าระบบจำแบบ 01/09/2026 ต้องสลับก่อน
+                    
                     if(docName.includes('/')) {
                         const parts = docName.split('/');
                         docDateObj = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
                     }
 
-                    // ถ้าระบุวันที่ได้ และวันที่อยู่ในช่วงที่เลือก
                     if (docDateObj && docDateObj >= startObj && docDateObj <= endObj) {
                         const fields = doc.fields;
                         const records = fields.records && fields.records.arrayValue && fields.records.arrayValue.values || [];
@@ -210,18 +207,15 @@
                             const f = rec.mapValue.fields;
                             const id = f.studentId.integerValue || f.studentId.stringValue || "";
                             
-                            // ถ้าตรงกับเลขที่เด็กที่ค้นหา
                             if (id == studentIdInput) {
                                 const name = f.studentName.stringValue || "";
                                 const status = f.status.stringValue || "";
                                 const remark = f.remark && f.remark.stringValue ? f.remark.stringValue : "-";
                                 
-                                studentFullName = name; // บันทึกชื่อเด็กไว้แสดงบนหัวกระดาษ
+                                studentFullName = name; 
 
-                                // เก็บสถิตินับยอด
                                 if(counts[status] !== undefined) counts[status]++;
 
-                                // แสดงในตารางเฉพาะสถานะที่ครูติ๊กเลือก
                                 if(filters.includes(status)) {
                                     let statusTh = status === 'absent' ? 'ขาดเรียน' : (status === 'sick' ? 'ป่วย' : (status === 'leave' ? 'ลากิจ' : (status === 'late' ? 'มาสาย' : 'มาเรียน')));
                                     let statusColor = status === 'absent' ? '#dc2626' : (status === 'sick' ? '#ca8a04' : (status === 'leave' ? '#2563eb' : (status === 'late' ? '#ea580c' : '#16a34a')));
@@ -264,17 +258,17 @@
             const element = document.getElementById('pdf-content');
             const studentId = document.getElementById('inputStudentId').value;
             
-            // ล้างเงาและพื้นหลังเพื่อความขาวสะอาดของกระดาษ
             const originalShadow = element.style.boxShadow;
             const originalBackground = element.style.background;
             element.style.boxShadow = 'none';
             element.style.background = '#ffffff';
 
             const opt = {
-                margin:       [10, 10, 10, 10], 
+                // ปรับขอบกระดาษใน PDF เป็น 0 แล้วให้ HTML สร้างขอบขึ้นมาเอง
+                margin:       0, 
                 filename:     `รายงานบุคคล_เลขที่${studentId}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+                html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
                 pagebreak:    { mode: 'css', avoid: ['tr', '.signature-box'] }
             };
